@@ -1,0 +1,143 @@
+{% extends 'store/base.html' %}
+
+{% block title %}My Orders - iPhone Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold mb-4">
+                <i class="fas fa-shopping-bag me-2"></i>My Orders
+            </h1>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="row">
+        {% for order in orders %}
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Order #{{ order.order_number }}</h5>
+                        <small class="text-muted">Placed on {{ order.created_at|date:"F j, Y" }}</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-{{ order.status|default:'secondary' }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="text-primary mb-3">Order Items</h6>
+                            {% for item in order.get_items %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>{{ item.product.iphone_model.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ item.product.color.name }} • {{ item.product.storage }} • {{ item.product.get_condition_display }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <div>{{ item.quantity }} x R{{ item.price }}</div>
+                                    <strong>R{{ item.get_total_price }}</strong>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-primary mb-3">Order Summary</h6>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>Subtotal ({{ order.get_item_count }} items)</span>
+                                    <span>R{{ order.total_amount }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-success">
+                                    <span><i class="fas fa-truck me-1"></i>Shipping</span>
+                                    <span>FREE</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total</strong>
+                                    <strong class="text-primary">R{{ order.total_amount }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <h6 class="text-primary mb-2">Shipping Address</h6>
+                                <p class="text-muted small">{{ order.shipping_address|linebreaks }}</p>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-3">
+                                <a href="{% url 'store:order_detail' order.id %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-2"></i>View Details
+                                </a>
+                                {% if order.shippingtracking %}
+                                <a href="{% url 'store:track_order %}?tracking_number={{ order.shippingtracking.tracking_number }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-shipping-fast me-2"></i>Track Order
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-bag fa-4x text-muted mb-4"></i>
+        <h3>No orders yet</h3>
+        <p class="text-muted mb-4">You haven't placed any orders yet. Start shopping to see your orders here.</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.btn {
+    border-radius: 25px;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #0056b3, #004085);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: 15px;
+}
+</style>
+{% endblock %}

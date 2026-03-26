@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}iPhone Store{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'store/css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-white text-dark">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-white" href="{% url 'store:home' %}">
+                <i class="fas fa-mobile-alt me-2 text-primary"></i>iPhone Store
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white hover-primary" href="{% url 'store:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white hover-primary" href="{% url 'store:product_list' %}">All iPhones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white hover-primary" href="{% url 'store:track_order' %}">
+                            <i class="fas fa-shipping-fast me-1"></i>Track Order
+                        </a>
+                    </li>
+                    {% if user.is_authenticated and user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white hover-primary" href="{% url 'admin:index' %}" target="_blank">
+                            <i class="fas fa-cog me-1"></i>Admin
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link position-relative text-white hover-primary" href="{% url 'store:cart' %}">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">0</span>
+                        </a>
+                    </li>
+                    
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white hover-primary" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item text-white" href="{% url 'store:profile' %}">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a></li>
+                            {% if user.is_staff %}
+                            <li><a class="dropdown-item text-white" href="{% url 'admin:index' %}" target="_blank">
+                                <i class="fas fa-cog me-2"></i>Admin Panel
+                            </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider border-secondary"></li>
+                            <li><a class="dropdown-item text-white" href="{% url 'store:logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white hover-primary" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white hover-primary" href="#" data-bs-toggle="modal" data-bs-target="#signupModal">
+                            <i class="fas fa-user-plus me-1"></i>Sign Up
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold" id="loginModalLabel">
+                        <i class="fas fa-sign-in-alt me-2 text-primary"></i>Welcome Back
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center text-white mb-4">Sign in to access your account</p>
+                    
+                    <form id="loginForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="loginUsername" class="form-label text-white">Username or Email</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="loginUsername" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label text-white">Password</label>
+                            <input type="password" class="form-control bg-dark text-white border-secondary" id="loginPassword" name="password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-white">Don't have an account? 
+                            <a href="#" class="text-primary" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#signupModal">Sign up</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold" id="signupModalLabel">
+                        <i class="fas fa-user-plus me-2 text-primary"></i>Create Account
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center text-white mb-4">Join iPhone Store for exclusive offers</p>
+                    
+                    <form id="signupForm">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="signupFirstName" class="form-label text-white">First Name</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="signupFirstName" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="signupLastName" class="form-label text-white">Last Name</label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="signupLastName" name="last_name" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupUsername" class="form-label text-white">Username</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="signupUsername" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupEmail" class="form-label text-white">Email Address</label>
+                            <input type="email" class="form-control bg-dark text-white border-secondary" id="signupEmail" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupPassword" class="form-label text-white">Password</label>
+                            <input type="password" class="form-control bg-dark text-white border-secondary" id="signupPassword" name="password1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupConfirmPassword" class="form-label text-white">Confirm Password</label>
+                            <input type="password" class="form-control bg-dark text-white border-secondary" id="signupConfirmPassword" name="password2" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-white">Already have an account? 
+                            <a href="#" class="text-primary" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#loginModal">Sign in</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-light py-4 mt-5 border-top border-secondary">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="fw-bold"><i class="fas fa-mobile-alt me-2 text-primary"></i>iPhone Store</h5>
+                    <p class="text-muted">Your trusted source for all iPhone models from iPhone 6 to iPhone 17.</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="fw-bold">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'store:home' %}" class="text-muted text-decoration-none hover-primary">Home</a></li>
+                        <li class="mb-2"><a href="{% url 'store:product_list' %}" class="text-muted text-decoration-none hover-primary">All iPhones</a></li>
+                        <li class="mb-2"><a href="{% url 'store:cart' %}" class="text-muted text-decoration-none hover-primary">Shopping Cart</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center">
+                <p class="text-muted mb-0">&copy; 2024 iPhone Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'store/js/script.js' %}"></script>
+    
+    <style>
+        /* Force white text in modal input fields */
+        .modal .form-control {
+            color: white !important;
+            background-color: #212529 !important;
+        }
+        
+        .modal .form-control::placeholder {
+            color: #adb5bd !important;
+        }
+        
+        .modal .form-control:focus {
+            color: white !important;
+            background-color: #212529 !important;
+        }
+        
+        /* Force white text for labels */
+        .modal .form-label {
+            color: white !important;
+        }
+    </style>
+    
+    <script>
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('/login/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    // Show specific error messages if available
+                    let errorMessage = data.error || 'Login failed';
+                    if (data.errors) {
+                        errorMessage = Object.values(data.errors).flat().join(', ');
+                    }
+                    alert(errorMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Login failed. Please try again.');
+            });
+        });
+
+        // Handle signup form submission
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            // Check if passwords match
+            const password = formData.get('password1');
+            const confirmPassword = formData.get('password2');
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            fetch('/register/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Account created successfully! Please sign in.');
+                    bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
+                    new bootstrap.Modal(document.getElementById('loginModal')).show();
+                } else {
+                    // Show specific error messages if available
+                    let errorMessage = data.error || 'Registration failed';
+                    if (data.errors) {
+                        errorMessage = Object.values(data.errors).flat().join(', ');
+                    }
+                    alert(errorMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Registration failed. Please try again.');
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

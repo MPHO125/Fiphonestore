@@ -1,0 +1,158 @@
+{% extends 'store/base.html' %}
+
+{% block title %}My Profile - iPhone Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Profile Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="card-title">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <p class="text-muted small">Member since {{ user.date_joined|date:"F Y" }}</p>
+                    
+                    <div class="mt-3">
+                        <span class="badge bg-success">Active</span>
+                        {% if user.is_staff %}
+                            <span class="badge bg-warning">Admin</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Content -->
+        <div class="col-md-8">
+            <!-- Profile Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Profile Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'store:update_profile' %}">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ user.first_name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ user.last_name }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user.email }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{{ user.username }}" readonly>
+                            <small class="text-muted">Username cannot be changed.</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>Shopping Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h3 class="text-primary">
+                                <i class="fas fa-shopping-cart"></i>
+                            </h3>
+                            <p class="text-muted">Items in Cart</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-success">
+                                <i class="fas fa-receipt"></i>
+                            </h3>
+                            <p class="text-muted">Orders Placed</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-info">
+                                <i class="fas fa-heart"></i>
+                            </h3>
+                            <p class="text-muted">Wishlist Items</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'store:cart' %}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-shopping-cart me-2"></i>View Cart
+                        </a>
+                        <a href="{% url 'store:order_list' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-receipt me-2"></i>My Orders
+                        </a>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #5a6fd8, #6a4190);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.rounded-circle {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Shopping Cart - iPhone Store{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold mb-4">
+                <i class="fas fa-shopping-cart me-2"></i>Shopping Cart
+            </h1>
+        </div>
+    </div>
+
+    {% if cart_items %}
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Cart Items ({{ cart.get_total_items }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for item in cart_items %}
+                        <div class="row align-items-center mb-4 pb-3 border-bottom">
+                            <div class="col-md-2">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.iphone_model.name }}" class="img-fluid rounded">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px;">
+                                        <i class="fas fa-mobile-alt fa-2x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <h6 class="mb-1">{{ item.product.iphone_model.name }}</h6>
+                                <p class="mb-0 text-muted small">
+                                    {{ item.product.color.name }} • {{ item.product.storage }} • {{ item.product.get_condition_display }}
+                                </p>
+                                <p class="mb-0 text-primary fw-bold">R{{ item.product.price }}</p>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <form action="{% url 'store:update_cart' item.pk %}" method="post" class="d-flex align-items-center">
+                                    {% csrf_token %}
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                               class="form-control" min="1" max="{{ item.product.stock_quantity }}">
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                                {% if item.product.stock_quantity < 10 %}
+                                    <small class="text-warning">Only {{ item.product.stock_quantity }} left in stock!</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-2 text-center">
+                                <h6 class="mb-0 fw-bold">R{{ item.get_total_price }}</h6>
+                            </div>
+                            
+                            <div class="col-md-1 text-center">
+                                <form action="{% url 'store:remove_from_cart' item.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                            onclick="return confirm('Are you sure you want to remove this item?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal ({{ cart.get_total_items }} items)</span>
+                            <span>R{{ cart.get_total_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span><i class="fas fa-truck me-1"></i>Shipping</span>
+                            <span>FREE</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax</span>
+                            <span>Calculated at checkout</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-4">
+                            <h5>Total</h5>
+                            <h5 class="text-primary">R{{ cart.get_total_price }}</h5>
+                        </div>
+                        
+                        <div class="alert alert-success border-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>FREE Shipping</strong> on all orders! Your order will be delivered within 3-5 business days.
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {% if user.is_authenticated %}
+                            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                                <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                            </button>
+                            {% else %}
+                            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to Checkout
+                            </button>
+                            <small class="text-muted d-block text-center mt-2">
+                                Please login or create an account to proceed with checkout
+                            </small>
+                            {% endif %}
+                            <p class="text-center text-muted small mt-2">
+                                <i class="fas fa-lock me-1"></i>Secure checkout
+                            </p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6 class="mb-3">Why shop with us?</h6>
+                            <ul class="list-unstyled small">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    1-year warranty on all devices
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    30-day return policy
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Free shipping on orders over R850
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Certified refurbished devices
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="{% url 'store:product_list' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty Cart -->
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+                    <h3>Your cart is empty</h3>
+                    <p class="text-muted mb-4">Looks like you haven't added any iPhones to your cart yet.</p>
+                    <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.cart-item {
+    transition: background-color 0.3s ease;
+}
+
+.cart-item:hover {
+    background-color: #f8f9fa;
+}
+
+.input-group-sm .form-control {
+    font-size: 0.875rem;
+}
+
+.btn-outline-danger:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+</style>
+
+<!-- Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" id="checkoutModalLabel">
+                    <i class="fas fa-credit-card me-2 text-primary"></i>Checkout
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="checkoutForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Shipping Information</h6>
+                            <div class="mb-3">
+                                <label for="shippingAddress" class="form-label text-muted">Shipping Address</label>
+                                <textarea class="form-control bg-secondary text-white border-secondary" id="shippingAddress" name="shipping_address" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label text-muted">Phone Number</label>
+                                <input type="tel" class="form-control bg-secondary text-white border-secondary" id="phone" name="phone">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Billing Information</h6>
+                            <div class="mb-3">
+                                <label for="billingAddress" class="form-label text-muted">Billing Address</label>
+                                <textarea class="form-control bg-secondary text-white border-secondary" id="billingAddress" name="billing_address" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label text-muted">Email Address</label>
+                                <input type="email" class="form-control bg-secondary text-white border-secondary" id="email" name="email" value="{{ user.email }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label text-muted">Order Notes (Optional)</label>
+                        <textarea class="form-control bg-secondary text-white border-secondary" id="notes" name="notes" rows="2" placeholder="Special instructions for your order..."></textarea>
+                    </div>
+                    <div class="alert alert-success border-success">
+                        <i class="fas fa-truck me-2"></i>
+                        <strong>FREE Shipping</strong> on all orders! Estimated delivery: 3-5 business days.
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-lock me-2"></i>Place Order - R{{ cart.get_total_price }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch('/checkout/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Order placed successfully! Order number: ' + data.order_number);
+            window.location.href = '/orders/';
+        } else {
+            alert(data.error || 'Checkout failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Checkout failed. Please try again.');
+    });
+});
+</script>
+{% endblock %}

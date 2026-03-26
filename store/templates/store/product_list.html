@@ -1,0 +1,235 @@
+{% extends 'store/base.html' %}
+
+{% block title %}All iPhones - iPhone Store{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold">All iPhones</h1>
+            <p class="lead text-muted">Browse our complete collection of iPhones from iPhone 6 to iPhone 17</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filter-form">
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ current_search }}" placeholder="Search iPhones...">
+                        </div>
+
+                        <!-- Model Filter -->
+                        <div class="mb-3">
+                            <label for="model" class="form-label">Model</label>
+                            <select class="form-select" id="model" name="model">
+                                <option value="">All Models</option>
+                                {% for model in models %}
+                                    <option value="{{ model.name }}" {% if current_model == model.name %}selected{% endif %}>
+                                        {{ model.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Color Filter -->
+                        <div class="mb-3">
+                            <label for="color" class="form-label">Color</label>
+                            <select class="form-select" id="color" name="color">
+                                <option value="">All Colors</option>
+                                {% for color in colors %}
+                                    <option value="{{ color.name }}" {% if current_color == color.name %}selected{% endif %}>
+                                        {{ color.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Storage Filter -->
+                        <div class="mb-3">
+                            <label for="storage" class="form-label">Storage</label>
+                            <select class="form-select" id="storage" name="storage">
+                                <option value="">All Storage</option>
+                                {% for storage, label in storage_options %}
+                                    <option value="{{ storage }}" {% if current_storage == storage %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Condition Filter -->
+                        <div class="mb-3">
+                            <label for="condition" class="form-label">Condition</label>
+                            <select class="form-select" id="condition" name="condition">
+                                <option value="">All Conditions</option>
+                                {% for condition, label in condition_options %}
+                                    <option value="{{ condition }}" {% if current_condition == condition %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Sort -->
+                        <div class="mb-3">
+                            <label for="sort" class="form-label">Sort By</label>
+                            <select class="form-select" id="sort" name="sort">
+                                <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest First</option>
+                                <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                                <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Name</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <!-- Results Count -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="mb-0">
+                    {% if is_paginated %}
+                        Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} products
+                    {% else %}
+                        Showing {{ products|length }} products
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Products -->
+            <div class="row">
+                {% for product in products %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 product-card">
+                    {% if product.cover_photo %}
+                        <img src="{{ product.cover_photo.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
+                    {% elif product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-mobile-alt fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ product.iphone_model.name }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    {{ product.color.name }} • {{ product.storage }} • {{ product.get_condition_display }}
+                                </small>
+                            </p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="h5 text-primary fw-bold">R{{ product.price }}</span>
+                                    {% if product.stock_quantity > 0 %}
+                                        <span class="badge bg-success">In Stock ({{ product.stock_quantity }})</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                    {% endif %}
+                                </div>
+                                <div class="btn-group w-100" role="group">
+                                    <a href="{% url 'store:product_detail' product.pk %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i> View
+                                    </a>
+                                    {% if product.stock_quantity > 0 %}
+                                        <form action="{% url 'store:add_to_cart' product.pk %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4>No products found</h4>
+                        <p class="text-muted">Try adjusting your filters or search terms</p>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-primary">Clear Filters</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Product pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}
