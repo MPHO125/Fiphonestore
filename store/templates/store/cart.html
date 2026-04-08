@@ -87,7 +87,7 @@
                             <span>Subtotal ({{ cart.get_total_items }} items)</span>
                             <span>R{{ cart.get_total_price }}</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2 text-success">
+                        <div class="d-flex justify-content-between mb-2 text-primary">
                             <span><i class="fas fa-truck me-1"></i>Shipping</span>
                             <span>FREE</span>
                         </div>
@@ -119,7 +119,7 @@
                                 Please login or create an account to proceed with checkout
                             </small>
                             {% endif %}
-                            <p class="text-center text-muted small mt-2">
+                            <p class="text-center text-white small mt-2">
                                 <i class="fas fa-lock me-1"></i>Secure checkout
                             </p>
                         </div>
@@ -205,25 +205,95 @@
                 <form id="checkoutForm">
                     {% csrf_token %}
                     <div class="row">
+                        <!-- Shipping Information -->
                         <div class="col-md-6">
                             <h6 class="text-primary mb-3">Shipping Information</h6>
                             <div class="mb-3">
-                                <label for="shippingAddress" class="form-label text-muted">Shipping Address</label>
-                                <textarea class="form-control bg-secondary text-white border-secondary" id="shippingAddress" name="shipping_address" rows="3" required></textarea>
+                                <label for="shipping_street" class="form-label text-muted">Street Address *</label>
+                                <input type="text" class="form-control bg-secondary text-white border-secondary" id="shipping_street" name="shipping_street" placeholder="123 Main Street, Apartment 4B" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="shipping_town" class="form-label text-muted">Town / Suburb *</label>
+                                    <input type="text" class="form-control bg-secondary text-white border-secondary" id="shipping_town" name="shipping_town" placeholder="Sandton" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="shipping_city" class="form-label text-muted">City *</label>
+                                    <input type="text" class="form-control bg-secondary text-white border-secondary" id="shipping_city" name="shipping_city" placeholder="Johannesburg" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="shipping_province" class="form-label text-muted">Province *</label>
+                                    <select class="form-control bg-secondary text-white border-secondary" id="shipping_province" name="shipping_province" required>
+                                        <option value="">Select Province</option>
+                                        <option value="Eastern Cape">Eastern Cape</option>
+                                        <option value="Free State">Free State</option>
+                                        <option value="Gauteng">Gauteng</option>
+                                        <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                                        <option value="Limpopo">Limpopo</option>
+                                        <option value="Mpumalanga">Mpumalanga</option>
+                                        <option value="Northern Cape">Northern Cape</option>
+                                        <option value="North West">North West</option>
+                                        <option value="Western Cape">Western Cape</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="shipping_postal" class="form-label text-muted">Postal Code *</label>
+                                    <input type="text" class="form-control bg-secondary text-white border-secondary" id="shipping_postal" name="shipping_postal" placeholder="2196" pattern="[0-9]{4}" maxlength="4" required>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label text-muted">Phone Number</label>
-                                <input type="tel" class="form-control bg-secondary text-white border-secondary" id="phone" name="phone">
+                                <input type="tel" class="form-control bg-secondary text-white border-secondary" id="phone" name="phone" placeholder="082 123 4567">
                             </div>
                         </div>
+                        <!-- Billing Information -->
                         <div class="col-md-6">
                             <h6 class="text-primary mb-3">Billing Information</h6>
-                            <div class="mb-3">
-                                <label for="billingAddress" class="form-label text-muted">Billing Address</label>
-                                <textarea class="form-control bg-secondary text-white border-secondary" id="billingAddress" name="billing_address" rows="3" required></textarea>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="sameAsShipping" name="same_as_shipping">
+                                <label class="form-check-label text-muted" for="sameAsShipping">Billing address is same as shipping address</label>
+                            </div>
+                            <div id="billingAddressContainer">
+                                <div class="mb-3">
+                                    <label for="billing_street" class="form-label text-muted">Street Address *</label>
+                                    <input type="text" class="form-control bg-secondary text-white border-secondary" id="billing_street" name="billing_street" placeholder="123 Main Street, Apartment 4B" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="billing_town" class="form-label text-muted">Town / Suburb *</label>
+                                        <input type="text" class="form-control bg-secondary text-white border-secondary" id="billing_town" name="billing_town" placeholder="Sandton" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="billing_city" class="form-label text-muted">City *</label>
+                                        <input type="text" class="form-control bg-secondary text-white border-secondary" id="billing_city" name="billing_city" placeholder="Johannesburg" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="billing_province" class="form-label text-muted">Province *</label>
+                                        <select class="form-control bg-secondary text-white border-secondary" id="billing_province" name="billing_province" required>
+                                            <option value="">Select Province</option>
+                                            <option value="Eastern Cape">Eastern Cape</option>
+                                            <option value="Free State">Free State</option>
+                                            <option value="Gauteng">Gauteng</option>
+                                            <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                                            <option value="Limpopo">Limpopo</option>
+                                            <option value="Mpumalanga">Mpumalanga</option>
+                                            <option value="Northern Cape">Northern Cape</option>
+                                            <option value="North West">North West</option>
+                                            <option value="Western Cape">Western Cape</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="billing_postal" class="form-label text-muted">Postal Code *</label>
+                                        <input type="text" class="form-control bg-secondary text-white border-secondary" id="billing_postal" name="billing_postal" placeholder="2196" pattern="[0-9]{4}" maxlength="4" required>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-3">
-                                <label for="email" class="form-label text-muted">Email Address</label>
+                                <label for="email" class="form-label text-muted">Email Address *</label>
                                 <input type="email" class="form-control bg-secondary text-white border-secondary" id="email" name="email" value="{{ user.email }}" required>
                             </div>
                         </div>
@@ -232,15 +302,20 @@
                         <label for="notes" class="form-label text-muted">Order Notes (Optional)</label>
                         <textarea class="form-control bg-secondary text-white border-secondary" id="notes" name="notes" rows="2" placeholder="Special instructions for your order..."></textarea>
                     </div>
-                    <div class="alert alert-success border-success">
+                    <div class="alert alert-success border-success text-white">
                         <i class="fas fa-truck me-2"></i>
                         <strong>FREE Shipping</strong> on all orders! Estimated delivery: 3-5 business days.
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
+                        <button type="submit" class="btn btn-primary btn-lg" id="placeOrderBtn">
                             <i class="fas fa-lock me-2"></i>Place Order - R{{ cart.get_total_price }}
                         </button>
                     </div>
+                    <noscript>
+                        <div class="alert alert-warning mt-2">
+                            <small>JavaScript is disabled. Form will submit normally.</small>
+                        </div>
+                    </noscript>
                 </form>
             </div>
         </div>
@@ -248,30 +323,72 @@
 </div>
 
 <script>
-document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    
-    fetch('/checkout/', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Order placed successfully! Order number: ' + data.order_number);
-            window.location.href = '/orders/';
+// Copy shipping values to billing fields
+function copyShippingToBilling() {
+    document.getElementById('billing_street').value = document.getElementById('shipping_street').value;
+    document.getElementById('billing_town').value = document.getElementById('shipping_town').value;
+    document.getElementById('billing_city').value = document.getElementById('shipping_city').value;
+    document.getElementById('billing_province').value = document.getElementById('shipping_province').value;
+    document.getElementById('billing_postal').value = document.getElementById('shipping_postal').value;
+}
+
+// Clear billing fields
+function clearBillingFields() {
+    document.getElementById('billing_street').value = '';
+    document.getElementById('billing_town').value = '';
+    document.getElementById('billing_city').value = '';
+    document.getElementById('billing_province').value = '';
+    document.getElementById('billing_postal').value = '';
+}
+
+// Set billing fields required attribute
+function setBillingRequired(required) {
+    const fields = ['billing_street', 'billing_town', 'billing_city', 'billing_province', 'billing_postal'];
+    fields.forEach(function(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (required) {
+            field.setAttribute('required', '');
         } else {
-            alert(data.error || 'Checkout failed');
+            field.removeAttribute('required');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Checkout failed. Please try again.');
     });
+}
+
+// Handle "same as shipping" checkbox
+document.getElementById('sameAsShipping').addEventListener('change', function() {
+    const billingContainer = document.getElementById('billingAddressContainer');
+    
+    if (this.checked) {
+        billingContainer.style.display = 'none';
+        setBillingRequired(false);
+        copyShippingToBilling();
+    } else {
+        billingContainer.style.display = 'block';
+        setBillingRequired(true);
+        clearBillingFields();
+    }
+});
+
+// Sync billing when shipping changes (if checkbox is checked)
+['shipping_street', 'shipping_town', 'shipping_city', 'shipping_province', 'shipping_postal'].forEach(function(fieldId) {
+    document.getElementById(fieldId).addEventListener('input', function() {
+        if (document.getElementById('sameAsShipping').checked) {
+            copyShippingToBilling();
+        }
+    });
+});
+
+// Form submission
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    // If same as shipping is checked, copy all shipping values to billing
+    if (document.getElementById('sameAsShipping').checked) {
+        copyShippingToBilling();
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('placeOrderBtn');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
 });
 </script>
 {% endblock %}

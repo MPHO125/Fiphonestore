@@ -12,155 +12,117 @@
         </div>
     </div>
 
-    <div class="row">
-        <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-filter me-2"></i>Filters
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="get" id="filter-form">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label for="search" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="search" name="search" 
-                                   value="{{ current_search }}" placeholder="Search iPhones...">
-                        </div>
-
-                        <!-- Model Filter -->
-                        <div class="mb-3">
-                            <label for="model" class="form-label">Model</label>
-                            <select class="form-select" id="model" name="model">
-                                <option value="">All Models</option>
-                                {% for model in models %}
-                                    <option value="{{ model.name }}" {% if current_model == model.name %}selected{% endif %}>
-                                        {{ model.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Color Filter -->
-                        <div class="mb-3">
-                            <label for="color" class="form-label">Color</label>
-                            <select class="form-select" id="color" name="color">
-                                <option value="">All Colors</option>
-                                {% for color in colors %}
-                                    <option value="{{ color.name }}" {% if current_color == color.name %}selected{% endif %}>
-                                        {{ color.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Storage Filter -->
-                        <div class="mb-3">
-                            <label for="storage" class="form-label">Storage</label>
-                            <select class="form-select" id="storage" name="storage">
-                                <option value="">All Storage</option>
-                                {% for storage, label in storage_options %}
-                                    <option value="{{ storage }}" {% if current_storage == storage %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Condition Filter -->
-                        <div class="mb-3">
-                            <label for="condition" class="form-label">Condition</label>
-                            <select class="form-select" id="condition" name="condition">
-                                <option value="">All Conditions</option>
-                                {% for condition, label in condition_options %}
-                                    <option value="{{ condition }}" {% if current_condition == condition %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Sort -->
-                        <div class="mb-3">
-                            <label for="sort" class="form-label">Sort By</label>
-                            <select class="form-select" id="sort" name="sort">
-                                <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest First</option>
-                                <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
-                                <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
-                                <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Name</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
-                        <a href="{% url 'store:product_list' %}" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</a>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Products Grid -->
-        <div class="col-lg-9">
-            <!-- Results Count -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="mb-0">
-                    {% if is_paginated %}
-                        Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} products
-                    {% else %}
-                        Showing {{ products|length }} products
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            
+                <form method="get" class="d-flex" id="search-form">
+                    <input type="text" class="form-control me-2" 
+                           name="search" value="{{ current_search }}" placeholder="Search iPhones...">
+                    {% if current_model %}
+                        <input type="hidden" name="model" value="{{ current_model }}">
                     {% endif %}
-                </p>
+                    {% if current_color %}
+                        <input type="hidden" name="color" value="{{ current_color }}">
+                    {% endif %}
+                    {% if current_storage %}
+                        <input type="hidden" name="storage" value="{{ current_storage }}">
+                    {% endif %}
+                    {% if current_condition %}
+                        <input type="hidden" name="condition" value="{{ current_condition }}">
+                    {% endif %}
+                    {% if current_sort %}
+                        <input type="hidden" name="sort" value="{{ current_sort }}">
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </form>
+            
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Products Grid -->
+        <div class="col-12">
+            <!-- Results Count and Sort -->
+            <div class="results-info d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <form method="get" class="d-flex align-items-center me-3" id="sort-form">
+                        {% if current_search %}
+                            <input type="hidden" name="search" value="{{ current_search }}">
+                        {% endif %}
+                        {% if current_model %}
+                            <input type="hidden" name="model" value="{{ current_model }}">
+                        {% endif %}
+                        {% if current_color %}
+                            <input type="hidden" name="color" value="{{ current_color }}">
+                        {% endif %}
+                        {% if current_storage %}
+                            <input type="hidden" name="storage" value="{{ current_storage }}">
+                        {% endif %}
+                        {% if current_condition %}
+                            <input type="hidden" name="condition" value="{{ current_condition }}">
+                        {% endif %}
+                        <label for="top-sort" class="form-label mb-0 me-2">Sort:</label>
+                        <select class="form-select sort-container" id="top-sort" name="sort" onchange="this.form.submit()">
+                            <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Name</option>
+                        </select>
+                    </form>
+                    <p class="mb-0">
+                        {% if is_paginated %}
+                            Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} products
+                        {% else %}
+                            Showing {{ products|length }} products
+                        {% endif %}
+                    </p>
+                </div>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                    <i class="fas fa-filter me-2"></i>Filters
+                </button>
             </div>
 
             <!-- Products -->
-            <div class="row">
+            <div class="row product-grid">
                 {% for product in products %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100 product-card">
-                    {% if product.cover_photo %}
-                        <img src="{{ product.cover_photo.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
-                    {% elif product.image %}
-                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
-                    {% else %}
-                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
-                            <i class="fas fa-mobile-alt fa-3x text-muted"></i>
-                        </div>
-                    {% endif %}
-                        
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ product.iphone_model.name }}</h5>
-                            <p class="card-text">
-                                <small class="text-muted">
-                                    {{ product.color.name }} • {{ product.storage }} • {{ product.get_condition_display }}
-                                </small>
-                            </p>
-                            <div class="mt-auto">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="h5 text-primary fw-bold">R{{ product.price }}</span>
+                <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                    <a href="{% url 'store:product_detail' product.pk %}" class="text-decoration-none">
+                        <div class="card h-100 product-card clickable-card">
+                        {% if product.cover_photo %}
+                            <img src="{{ product.cover_photo.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
+                        {% elif product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-mobile-alt fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                            
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ product.iphone_model.name }}</h5>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        {{ product.color.name }} • {{ product.storage }} • {{ product.get_condition_display }}
+                                    </small>
+                                </p>
+                                <div class="mt-auto">
+                                <div class="mb-2">
                                     {% if product.stock_quantity > 0 %}
                                         <span class="badge bg-success">In Stock ({{ product.stock_quantity }})</span>
                                     {% else %}
                                         <span class="badge bg-danger">Out of Stock</span>
                                     {% endif %}
                                 </div>
-                                <div class="btn-group w-100" role="group">
-                                    <a href="{% url 'store:product_detail' product.pk %}" class="btn btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i> View
-                                    </a>
-                                    {% if product.stock_quantity > 0 %}
-                                        <form action="{% url 'store:add_to_cart' product.pk %}" method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="quantity" value="1">
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-cart-plus me-1"></i> Add to Cart
-                                            </button>
-                                        </form>
-                                    {% endif %}
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 text-primary fw-bold">R{{ product.price }}</span>
                                 </div>
                             </div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 {% empty %}
                 <div class="col-12">
@@ -214,22 +176,308 @@
     </div>
 </div>
 
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" id="filterModalLabel">
+                    <i class="fas fa-filter me-2 text-primary"></i>Filter Products
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get" id="filter-modal-form">
+                    {% if current_search %}
+                        <input type="hidden" name="search" value="{{ current_search }}">
+                    {% endif %}
+                    {% if current_sort %}
+                        <input type="hidden" name="sort" value="{{ current_sort }}">
+                    {% endif %}
+                    
+                    <!-- Model Filter -->
+                    <div class="mb-3">
+                        <label for="modal-model" class="form-label text-white">Model</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="modal-model" name="model">
+                            <option value="">All Models</option>
+                            {% for model in models %}
+                                <option value="{{ model.name }}" {% if current_model == model.name %}selected{% endif %}>
+                                    {{ model.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Color Filter -->
+                    <div class="mb-3">
+                        <label for="modal-color" class="form-label text-white">Color</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="modal-color" name="color">
+                            <option value="">All Colors</option>
+                            {% for color in colors %}
+                                <option value="{{ color.name }}" {% if current_color == color.name %}selected{% endif %}>
+                                    {{ color.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Storage Filter -->
+                    <div class="mb-3">
+                        <label for="modal-storage" class="form-label text-white">Storage</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="modal-storage" name="storage">
+                            <option value="">All Storage</option>
+                            {% for storage, label in storage_options %}
+                                <option value="{{ storage }}" {% if current_storage == storage %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Condition Filter -->
+                    <div class="mb-3">
+                        <label for="modal-condition" class="form-label text-white">Condition</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="modal-condition" name="condition">
+                            <option value="">All Conditions</option>
+                            {% for condition, label in condition_options %}
+                                <option value="{{ condition }}" {% if current_condition == condition %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <a href="{% url 'store:product_list' %}" class="btn btn-outline-secondary">Clear Filters</a>
+                <button type="submit" form="filter-modal-form" class="btn btn-primary">
+                    <i class="fas fa-check me-2"></i>Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .product-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: none;
 }
 
 .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transform: none;
+    box-shadow: none;
 }
 
 .card-img-top {
-    transition: transform 0.3s ease;
+    transition: none;
 }
 
 .product-card:hover .card-img-top {
-    transform: scale(1.05);
+    transform: none;
+}
+
+/* Clickable card styles */
+.clickable-card {
+    cursor: pointer;
+    transition: none;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+.clickable-card:hover {
+    transform: none;
+    box-shadow: none;
+    border: none;
+}
+
+.clickable-card .card-title {
+    color: #ffffff !important;
+}
+
+.clickable-card .card-text small {
+    color: #adb5bd !important;
+}
+
+.clickable-card .h5 {
+    color: #007bff !important;
+}
+
+/* Search Bar Styles */
+.search-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border: 1px solid #404040;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.search-container .form-control {
+    background-color: #2c2c2c !important;
+    border: 2px solid #404040 !important;
+    color: #ffffff !important;
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    transition: none;
+}
+
+.search-container .form-control:focus {
+    background-color: #333333 !important;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    color: #ffffff !important;
+}
+
+.search-container .form-control::placeholder {
+    color: #adb5bd !important;
+}
+
+.search-container .btn-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 25px;
+    font-weight: 500;
+    transition: none;
+    white-space: nowrap;
+    color: #ffffff !important;
+}
+
+.search-container .btn-primary:hover {
+    background: linear-gradient(45deg, #0056b3, #004085);
+    transform: none;
+    box-shadow: none;
+    color: #ffffff !important;
+}
+
+/* Sort Dropdown Styles */
+.sort-container {
+    background-color: #2c2c2c !important;
+    border: 2px solid #404040 !important;
+    border-radius: 25px;
+    overflow: hidden;
+    transition: none;
+    color: #ffffff !important;
+}
+
+.sort-container:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    color: #ffffff !important;
+}
+
+.sort-container option {
+    background-color: #2c2c2c !important;
+    color: #ffffff !important;
+}
+
+/* Results Count Styles */
+.results-info {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border: 1px solid #404040;
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.results-info p {
+    color: #ffffff !important;
+    margin: 0;
+    font-weight: 500;
+}
+
+.results-info .form-label {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+/* Filter Button Styles */
+.btn-outline-primary {
+    border: 2px solid #007bff;
+    color: #ffffff !important;
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: none;
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+    transform: none;
+    box-shadow: none;
+    color: #ffffff !important;
+}
+
+/* Force 2 columns on mobile devices */
+@media (max-width: 576px) {
+    .product-grid .col-sm-6 {
+        flex: 0 0 auto;
+        width: 50% !important;
+    }
+    
+    .search-container {
+        padding: 1rem;
+    }
+    
+    .search-container .form-control {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+    }
+    
+    .search-container .btn-primary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .results-info {
+        padding: 0.75rem 1rem;
+    }
+    
+    .sort-container {
+        font-size: 0.9rem;
+    }
+    
+    /* Mobile Pagination Styles */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .pagination .page-link {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+        min-width: 2.5rem;
+        border-radius: 8px;
+        margin: 0 1px;
+    }
+    
+    .pagination .page-item.active .page-link {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    /* Hide some page numbers on very small screens */
+    @media (max-width: 400px) {
+        .pagination .page-link {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
+            min-width: 2rem;
+        }
+        
+        .pagination .page-item:not(.active):not(.disabled) {
+            display: none;
+        }
+        
+        .pagination .page-item.active,
+        .pagination .page-item:first-child,
+        .pagination .page-item:last-child,
+        .pagination .page-item:nth-child(2),
+        .pagination .page-item:nth-last-child(2) {
+            display: block;
+        }
+    }
 }
 </style>
 {% endblock %}

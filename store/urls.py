@@ -25,4 +25,13 @@ urlpatterns = [
     path('orders/', views.order_list, name='order_list'),
     path('order/<uuid:order_id>/', views.order_detail, name='order_detail'),
     path('track/', views.track_order, name='track_order'),
+    
+    # PayFast Payment URLs
+    path('payment/redirect/', views.payment_redirect, name='payment_redirect'),
+    path('payment/success/', views.payment_success, name='payment_success'),
+    path('payment/cancel/', views.payment_cancel, name='payment_cancel'),
+    path('payment/notify/', views.payment_notify, name='payment_notify'),
+    
+    # Debug URL
+    path('checkout/debug/', views.checkout_debug, name='checkout_debug'),
 ]

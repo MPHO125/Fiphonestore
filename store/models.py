@@ -366,13 +366,27 @@ class Order(models.Model):
 
     STATUS_CHOICES = [
 
-        ('pending', 'Pending'),
+        ('pending_payment', 'Pending Payment'),
+
+        ('paid', 'Paid'),
 
         ('processing', 'Processing'),
 
         ('shipped', 'Shipped'),
 
         ('delivered', 'Delivered'),
+
+        ('cancelled', 'Cancelled'),
+
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+
+        ('pending', 'Pending'),
+
+        ('completed', 'Completed'),
+
+        ('failed', 'Failed'),
 
         ('cancelled', 'Cancelled'),
 
@@ -386,19 +400,53 @@ class Order(models.Model):
 
     session_key = models.CharField(max_length=40, null=True, blank=True)
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_payment')
+
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
 
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
-    shipping_address = models.TextField()
+    # Shipping Address Fields
+    shipping_street = models.CharField(max_length=255)
+    shipping_town = models.CharField(max_length=100)
+    shipping_city = models.CharField(max_length=100)
+    shipping_province = models.CharField(max_length=100)
+    shipping_postal = models.CharField(max_length=10)
 
-    billing_address = models.TextField()
+    # Billing Address Fields
+    billing_street = models.CharField(max_length=255)
+    billing_town = models.CharField(max_length=100)
+    billing_city = models.CharField(max_length=100)
+    billing_province = models.CharField(max_length=100)
+    billing_postal = models.CharField(max_length=10)
+
+    # Legacy fields for backward compatibility
+    shipping_address = models.TextField(blank=True)
+    billing_address = models.TextField(blank=True)
 
     email = models.EmailField()
 
     phone = models.CharField(max_length=20, blank=True)
 
     notes = models.TextField(blank=True)
+
+    # PayFast payment fields
+
+    pf_payment_id = models.CharField(max_length=100, blank=True, null=True, help_text="PayFast Payment ID")
+
+    pf_m_payment_id = models.CharField(max_length=100, blank=True, null=True, help_text="PayFast Merchant Payment ID")
+
+    pf_transaction_id = models.CharField(max_length=100, blank=True, null=True, help_text="PayFast Transaction ID")
+
+    pf_payment_status = models.CharField(max_length=50, blank=True, null=True, help_text="PayFast Payment Status")
+
+    pf_amount_gross = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    pf_amount_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    pf_amount_net = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    pf_payment_date = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

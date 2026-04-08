@@ -9,7 +9,8 @@
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <h1 class="display-4 fw-bold mb-4 text-white">Latest iPhone Collection</h1>
-                <p class="lead text-muted mb-4">Discover complete range of iPhones from iPhone 6 to iPhone 17. All colors, all storage options, best prices guaranteed.</p>
+                <p class="lead text-muted mb-4">Discover complete range of iPhones from iPhone 6 to iPhone 17. All
+                    colors, all storage options, best prices guaranteed.</p>
                 <div class="d-flex gap-3 flex-wrap">
                     <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">
                         <i class="fas fa-shopping-bag me-2"></i>Shop Now
@@ -33,57 +34,63 @@
             <h2 class="display-5 fw-bold text-dark">Featured iPhones</h2>
             <p class="lead text-muted">Handpicked selection of our best-selling models</p>
         </div>
-        
+
         {% if featured_products %}
         <div class="row">
-    {% for product in featured_products %}
-    <div class="col-lg-3 col-md-6 mb-4">
-        
-        <a href="{% url 'store:product_detail' product.pk %}" class="text-decoration-none">
-            <div class="card h-100 product-card bg-dark text-white border">
-                
-                {% if product.cover_photo %}
-                    <img src="{{ product.cover_photo.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
-                {% elif product.image %}
-                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
-                {% else %}
-                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
-                        <i class="fas fa-mobile-alt fa-3x text-white"></i>
-                    </div>
-                {% endif %}
-                
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title text-white">{{ product.iphone_model.name }}</h5>
-                        <span style="width: 12px; height: 12px; border-radius: 50%; background-color: {{ product.color.hex_code }}; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd;" title="{{ product.color.name }}"></span>
-                    </div>
+            {% for product in featured_products %}
+            <div class="col-lg-3 col-md-6 mb-4">
 
-                    <p class="card-text">
-                        <small class="text-white">
-                            {{ product.color.name }} • {{ product.storage }} • {{ product.get_condition_display }}
-                        </small>
-                    </p>
+                <a href="{% url 'store:product_detail' product.pk %}" class="text-decoration-none">
+                    <div class="card h-100 product-card bg-dark text-white border">
 
-                    <div class="mt-auto">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="h5 text-white fw-bold">R{{ product.price }}</span>
-
-                            {% if product.stock_quantity > 0 %}
-                                <span class="badge bg-success">In Stock</span>
-                            {% else %}
-                                <span class="badge bg-danger">Out of Stock</span>
-                            {% endif %}
+                        {% if product.cover_photo %}
+                        <img src="{{ product.cover_photo.url }}" class="card-img-top"
+                            alt="{{ product.iphone_model.name }}" style="height: 200px; object-fit: cover;">
+                        {% elif product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}"
+                            style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                            style="height: 200px;">
+                            <i class="fas fa-mobile-alt fa-3x text-white"></i>
                         </div>
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title text-white">{{ product.iphone_model.name }}</h5>
+                                <span
+                                    style="width: 12px; height: 12px; border-radius: 50%; background-color: {{ product.color.hex_code }}; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd;"
+                                    title="{{ product.color.name }}"></span>
+                            </div>
+
+                            <p class="card-text">
+                                <small class="text-white">
+                                    {{ product.color.name }} • {{ product.storage }} • {{ product.get_condition_display
+                                    }}
+                                </small>
+                            </p>
+
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 text-white fw-bold">R{{ product.price }}</span>
+
+                                    {% if product.stock_quantity > 0 %}
+                                    <span class="badge bg-success">In Stock</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                </div>
+                </a>
 
             </div>
-        </a>
+            {% endfor %}
+        </div>
 
-    </div>
-    {% endfor %}
-</div>
-        
         <div class="text-center mt-4">
             <a href="{% url 'store:product_list' %}" class="btn btn-primary">
                 View All Products <i class="fas fa-arrow-right ms-2"></i>
@@ -112,7 +119,7 @@
             <h2 class="display-5 fw-bold text-dark">Latest iPhone Models</h2>
             <p class="lead text-muted">Explore the newest releases from Apple</p>
         </div>
-        
+
         {% if latest_models %}
         <div class="row">
             {% for model in latest_models %}
@@ -121,15 +128,18 @@
                 <a href="{% url 'store:product_detail' product.pk %}" class="text-decoration-none">
                     <div class="card h-100 product-card bg-dark text-white border">
                         {% if product.cover_photo %}
-                            <img src="{{ product.cover_photo.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 150px; object-fit: cover;">
+                        <img src="{{ product.cover_photo.url }}" class="card-img-top"
+                            alt="{{ product.iphone_model.name }}" style="height: 150px; object-fit: cover;">
                         {% elif product.image %}
-                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}" style="height: 150px; object-fit: cover;">
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.iphone_model.name }}"
+                            style="height: 150px; object-fit: cover;">
                         {% else %}
-                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 150px;">
-                                <i class="fas fa-mobile-alt fa-2x text-white"></i>
-                            </div>
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                            style="height: 150px;">
+                            <i class="fas fa-mobile-alt fa-2x text-white"></i>
+                        </div>
                         {% endif %}
-                        
+
                         <div class="card-body">
                             <h6 class="card-title text-white">{{ model.name }}</h6>
                             <small class="text-white">{{ model.release_year }}</small>
@@ -188,51 +198,146 @@
 </section>
 
 <style>
-.hero-section {
-    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-    color: white;
-    padding: 80px 0;
-    position: relative;
-    overflow: hidden;
-}
+    .hero-section {
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+        color: white;
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+    }
 
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(0,123,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    pointer-events: none;
-}
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(0,123,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        pointer-events: none;
+    }
 
-.product-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background-color: #515151;
-    border: 1px solid #ffffff;
-}
+    .product-card {
+        transition: none;
+        background-color: #000000 !important;
+        border: 1px solid #ffffff;
+    }
 
-.product-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 123, 255, 0.2);
-}
+    .product-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
 
-.feature-box {
-    padding: 2rem;
-    transition: transform 0.3s ease;
-}
+    .feature-box {
+        padding: 2rem;
+        transition: none;
+    }
 
-.feature-box:hover {
-    transform: translateY(-10px);
-}
+    .feature-box:hover {
+        transform: none;
+    }
 
-.feature-box i {
-    transition: transform 0.3s ease;
-}
+    .feature-box i {
+        transition: none;
+    }
 
-.feature-box:hover i {
-    transform: scale(1.2);
-}
+    .feature-box:hover i {
+        transform: none;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 40px 0;
+        }
+        
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+        
+        .hero-section p {
+            font-size: 1rem;
+        }
+        
+        .hero-section .btn {
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            margin: 5px;
+        }
+        
+        .featured-products .col-lg-3 {
+            flex: 0 0 auto;
+            width: 50% !important;
+        }
+        
+        .latest-models .col-lg-2 {
+            flex: 0 0 auto;
+            width: 50% !important;
+        }
+        
+        .latest-models .col-sm-6 {
+            flex: 0 0 auto;
+            width: 50% !important;
+        }
+        
+        .features .col-md-4 {
+            flex: 0 0 auto;
+            width: 100% !important;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-box {
+            padding: 1.5rem;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .hero-section {
+            padding: 30px 0;
+        }
+        
+        .hero-section h1 {
+            font-size: 1.75rem;
+        }
+        
+        .hero-section p {
+            font-size: 0.9rem;
+        }
+        
+        .hero-section .btn {
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .featured-products .col-lg-3 {
+            flex: 0 0 auto;
+            width: 100% !important;
+            margin-bottom: 1rem;
+        }
+        
+        .latest-models .col-lg-2,
+        .latest-models .col-sm-6 {
+            flex: 0 0 auto;
+            width: 100% !important;
+            margin-bottom: 1rem;
+        }
+        
+        .features .col-md-4 {
+            flex: 0 0 auto;
+            width: 100% !important;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-box {
+            padding: 1rem;
+        }
+        
+        .product-card img {
+            height: 180px !important;
+        }
+    }
 </style>
 {% endblock %}

@@ -19,13 +19,12 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
         <div class="container">
-            <a class="navbar-brand fw-bold text-white" href="{% url 'store:home' %}">
-                <i class="fas fa-mobile-alt me-2 text-primary"></i>iPhone Store
-            </a>
-            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            <a class="navbar-brand fw-bold text-white" href="{% url 'store:home' %}">
+                <i> <img src="{% static 'store/img/iphonestore1.png' %}" alt="iPhone Logo" height="80" class="me-2"></i>iPhone Store
+            </a>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">

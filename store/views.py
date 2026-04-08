@@ -28,6 +28,8 @@ from .models import iPhoneProduct, iPhoneModel, Color, Cart, CartItem, Order, Or
 
 from .forms import CustomUserCreationForm
 
+from .payfast import PayFastPayment, verify_payfast_signature
+
 import json
 
 import uuid
@@ -590,155 +592,291 @@ def update_profile(request):
 
 
 @login_required
-
 def checkout(request):
-
     if request.method == 'POST':
-
         try:
-
+            # Ensure session exists
+            if not request.session.session_key:
+                request.session.create()
+            
             # Get cart directly
-
             cart = Cart.objects.get_or_create(session_key=request.session.session_key)[0]
-
             cart_items = cart.cartitem_set.all()
-
             
-
             if not cart_items:
-
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-
                     return JsonResponse({'success': False, 'error': 'Your cart is empty'})
-
                 messages.error(request, 'Your cart is empty')
-
                 return redirect('store:cart')
-
             
-
-            # Create order
-
+            # Validate required fields
+            shipping_address = request.POST.get('shipping_address', '').strip()
+            billing_address = request.POST.get('billing_address', '').strip()
+            email = request.POST.get('email', '').strip()
+            
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            
+            if not shipping_address:
+                if is_ajax:
+                    return JsonResponse({'success': False, 'error': 'Shipping address is required'})
+                messages.error(request, 'Shipping address is required')
+                return redirect('store:cart')
+            if not billing_address:
+                if is_ajax:
+                    return JsonResponse({'success': False, 'error': 'Billing address is required'})
+                messages.error(request, 'Billing address is required')
+                return redirect('store:cart')
+            if not email:
+                if is_ajax:
+                    return JsonResponse({'success': False, 'error': 'Email is required'})
+                messages.error(request, 'Email is required')
+                return redirect('store:cart')
+            
+            # Create order with pending payment status
             total_amount = cart.get_total_price()
-
             order = Order.objects.create(
-
                 user=request.user,
-
                 total_amount=total_amount,
-
-                shipping_address=request.POST.get('shipping_address'),
-
-                billing_address=request.POST.get('billing_address'),
-
-                email=request.POST.get('email'),
-
+                shipping_address=shipping_address,
+                billing_address=billing_address,
+                email=email,
                 phone=request.POST.get('phone', ''),
-
-                notes=request.POST.get('notes', '')
-
+                notes=request.POST.get('notes', ''),
+                status='pending_payment',
+                payment_status='pending'
             )
-
             
-
             # Create order items
-
             for cart_item in cart_items:
-
                 OrderItem.objects.create(
-
                     order=order,
-
                     product=cart_item.product,
-
                     quantity=cart_item.quantity,
-
                     price=cart_item.product.price
-
                 )
-
+                # Update stock
+                cart_item.product.stock_quantity -= cart_item.quantity
+                cart_item.product.save()
             
-
-            # Create shipping tracking
-
-            tracking_number = f"IP{order.order_number.upper()}{datetime.now().strftime('%m%d')}"
-
-            tracking = ShippingTracking.objects.create(
-
-                order=order,
-
-                tracking_number=tracking_number,
-
-                carrier='iPhone Store Shipping',
-
-                shipped_date=datetime.now(),
-
-                estimated_delivery=datetime.now() + timedelta(days=5),
-
-                current_status='Order Confirmed'
-
-            )
-
+            # Store order ID in session for payment processing
+            request.session['pending_order_id'] = str(order.id)
             
-
-            # Add initial shipping update
-
-            ShippingUpdate.objects.create(
-
-                tracking=tracking,
-
-                status='Order Confirmed',
-
-                location='Processing Center',
-
-                timestamp=datetime.now(),
-
-                description='Your order has been confirmed and is being processed.'
-
-            )
-
+            # Generate PayFast payment form
+            payfast_payment = PayFastPayment(order, request)
+            payment_form = payfast_payment.get_payment_form()
             
-
-            # Clear cart
-
-            cart_items.delete()
-
-            
-
-            # Check if this is an AJAX request
-
+            # Return payment form data for AJAX requests
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-
                 return JsonResponse({
-
-                    'success': True, 
-
+                    'success': True,
                     'order_number': order.order_number,
-
-                    'message': 'Order placed successfully!'
-
+                    'payment_required': True,
+                    'payment_form': payment_form
                 })
-
             
-
-            messages.success(request, f'Order placed successfully! Order number: {order.order_number}')
-
-            return redirect('store:order_detail', order_id=order.id)
-
+            # For regular form submission, render payment redirect page
+            return render(request, 'store/payment_redirect.html', {
+                'order': order,
+                'payment_form': payment_form
+            })
             
-
         except Exception as e:
-
+            import traceback
+            error_msg = str(e)
+            tb = traceback.format_exc()
+            print(f"CHECKOUT ERROR: {error_msg}")
+            print(tb)
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-
-                return JsonResponse({'success': False, 'error': str(e)})
-
-            messages.error(request, 'An error occurred while placing your order. Please try again.')
-
-            return redirect('store:cart')
-
+                return JsonResponse({'success': False, 'error': f'Error: {error_msg}'})
+            # Show error page with details instead of redirecting
+            return render(request, 'store/checkout_error.html', {
+                'error_message': error_msg,
+                'traceback': tb
+            })
     
+    return redirect('store:cart')
 
+
+@login_required
+def checkout_debug(request):
+    """Debug view to check checkout configuration"""
+    from django.conf import settings
+    import traceback
+    
+    debug_info = {
+        'session_key': request.session.session_key,
+        'user': str(request.user),
+        'cart_exists': False,
+        'cart_items_count': 0,
+        'payfast_config': {
+            'mode': getattr(settings, 'PAYFAST_MODE', 'NOT SET'),
+            'merchant_id': getattr(settings, 'PAYFAST_MERCHANT_ID', 'NOT SET'),
+            'merchant_key': getattr(settings, 'PAYFAST_MERCHANT_KEY', 'NOT SET')[:5] + '...' if getattr(settings, 'PAYFAST_MERCHANT_KEY', '') else 'NOT SET',
+        },
+        'errors': []
+    }
+    
+    # Check cart
+    try:
+        if not request.session.session_key:
+            request.session.create()
+        cart = Cart.objects.get_or_create(session_key=request.session.session_key)[0]
+        cart_items = cart.cartitem_set.all()
+        debug_info['cart_exists'] = True
+        debug_info['cart_items_count'] = cart_items.count()
+        debug_info['cart_total'] = str(cart.get_total_price())
+    except Exception as e:
+        debug_info['errors'].append(f'Cart error: {str(e)}')
+        debug_info['errors'].append(traceback.format_exc())
+    
+    # Check PayFast config
+    try:
+        from .payfast import PayFastConfig
+        config = PayFastConfig()
+        debug_info['payfast_config']['process_url'] = config.get_process_url()
+        debug_info['payfast_config']['merchant_id'] = config.get_merchant_id()
+    except Exception as e:
+        debug_info['errors'].append(f'PayFast config error: {str(e)}')
+        debug_info['errors'].append(traceback.format_exc())
+    
+    return JsonResponse(debug_info, json_dumps_params={'indent': 2})
+
+
+@login_required
+def payment_redirect(request):
+    """Display payment redirect page with auto-submitting form"""
+    order_id = request.session.get('pending_order_id')
+    if not order_id:
+        messages.error(request, 'No pending order found.')
+        return redirect('store:cart')
+    
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    payfast_payment = PayFastPayment(order, request)
+    payment_form = payfast_payment.get_payment_form()
+    
+    return render(request, 'store/payment_redirect.html', {
+        'order': order,
+        'payment_form': payment_form
+    })
+
+
+@csrf_exempt
+def payment_notify(request):
+    """
+    PayFast ITN (Instant Transaction Notification) handler
+    This is called by PayFast server-to-server when payment is complete
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+    
+    try:
+        # Get POST data
+        data = request.POST.dict()
+        
+        # Verify signature
+        signature = data.pop('signature', None)
+        if not signature:
+            return JsonResponse({'status': 'error', 'message': 'Missing signature'})
+        
+        if not verify_payfast_signature(data, signature):
+            return JsonResponse({'status': 'error', 'message': 'Invalid signature'})
+        
+        # Get order from m_payment_id
+        order_id = data.get('m_payment_id')
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Order not found'})
+        
+        # Update order with PayFast data
+        order.pf_payment_id = data.get('pf_payment_id')
+        order.pf_transaction_id = data.get('pf_transaction_id')
+        order.pf_payment_status = data.get('payment_status')
+        
+        # Handle payment status
+        payment_status = data.get('payment_status', '').lower()
+        
+        if payment_status == 'complete':
+            order.payment_status = 'completed'
+            order.status = 'paid'
+            order.pf_amount_gross = data.get('amount_gross')
+            order.pf_amount_fee = data.get('amount_fee')
+            order.pf_amount_net = data.get('amount_net')
+            
+            # Create shipping tracking after successful payment
+            if not hasattr(order, 'shippingtracking'):
+                tracking_number = f"IP{order.order_number.upper()}{datetime.now().strftime('%m%d')}"
+                tracking = ShippingTracking.objects.create(
+                    order=order,
+                    tracking_number=tracking_number,
+                    carrier='iPhone Store Shipping',
+                    shipped_date=None,  # Will be set when actually shipped
+                    estimated_delivery=datetime.now() + timedelta(days=5),
+                    current_status='Payment Confirmed'
+                )
+                ShippingUpdate.objects.create(
+                    tracking=tracking,
+                    status='Payment Confirmed',
+                    location='Processing Center',
+                    timestamp=datetime.now(),
+                    description='Your payment has been received and order is being processed.'
+                )
+        elif payment_status == 'failed':
+            order.payment_status = 'failed'
+        elif payment_status == 'cancelled':
+            order.payment_status = 'cancelled'
+        
+        order.save()
+        
+        return JsonResponse({'status': 'ok'})
+        
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@login_required
+def payment_success(request):
+    """Customer is redirected here after successful payment"""
+    order_id = request.session.get('pending_order_id')
+    
+    if order_id:
+        try:
+            order = Order.objects.get(id=order_id, user=request.user)
+            # Clear pending order from session
+            del request.session['pending_order_id']
+            request.session.modified = True
+            
+            messages.success(request, f'Payment successful! Order number: {order.order_number}')
+            return redirect('store:order_detail', order_id=order.id)
+        except Order.DoesNotExist:
+            pass
+    
+    messages.success(request, 'Payment completed successfully!')
+    return redirect('store:order_list')
+
+
+@login_required
+def payment_cancel(request):
+    """Customer is redirected here if they cancel payment"""
+    order_id = request.session.get('pending_order_id')
+    
+    if order_id:
+        try:
+            order = Order.objects.get(id=order_id, user=request.user)
+            order.payment_status = 'cancelled'
+            order.save()
+            
+            # Restore stock
+            for item in order.get_items():
+                item.product.stock_quantity += item.quantity
+                item.product.save()
+            
+            messages.warning(request, 'Payment was cancelled. Your order has been saved but not processed.')
+        except Order.DoesNotExist:
+            messages.warning(request, 'Payment was cancelled.')
+    else:
+        messages.warning(request, 'Payment was cancelled.')
+    
     return redirect('store:cart')
 
 

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-^y^zrsl4y!vkb8%5$lonqh%ots2*wrqt#t-6w@o^pm88=mt#7^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['10.10.21.240', '127.0.0.1', 'localhost', '*']
 
 # Authentication settings
 LOGIN_URL = 'store:login'
@@ -132,3 +132,23 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# PayFast Payment Gateway Configuration
+# =====================================
+# Mode: 'sandbox' for testing, 'live' for production
+PAYFAST_MODE = 'sandbox'
+
+# Merchant Credentials (Replace with your actual PayFast credentials)
+# Get these from your PayFast account dashboard
+PAYFAST_MERCHANT_ID = '10000100'  # Sandbox test merchant ID
+PAYFAST_MERCHANT_KEY = '46f0cd694581a'  # Sandbox test merchant key
+
+# Optional: Passphrase for additional security (set in PayFast account settings)
+PAYFAST_PASSPHRASE = ''  # Leave empty if not configured
+
+# IMPORTANT: For production, change PAYFAST_MODE to 'live' and use your real credentials:
+# PAYFAST_MODE = 'live'
+# PAYFAST_MERCHANT_ID = 'your_live_merchant_id'
+# PAYFAST_MERCHANT_KEY = 'your_live_merchant_key'
+# PAYFAST_PASSPHRASE = 'your_passphrase_if_configured'
